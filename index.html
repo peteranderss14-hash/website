@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#aac6d1">
+  <title>madison</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="background" aria-hidden="true"></div>
+  <video id="backgroundVideo" class="background-video" muted loop playsinline preload="none"></video>
+  <div id="cursorGlow" class="cursor-glow" aria-hidden="true"></div>
+  <div id="cursorDot" class="cursor-dot" aria-hidden="true"></div>
+  <canvas id="particles" class="particles" aria-hidden="true"></canvas>
+
+  <main class="page-shell">
+    <section id="profileCard" class="profile-card" aria-label="Profile">
+      <div class="avatar-shell" id="avatarShell">
+        <img id="avatar" src="avatar.png" alt="Profile avatar" draggable="false">
+        <div class="avatar-decoration" aria-hidden="true">
+          <span class="ring"></span>
+          <span class="spark s1"></span><span class="spark s2"></span><span class="spark s3"></span>
+          <span class="orb o1"></span><span class="orb o2"></span><span class="orb o3"></span><span class="orb o4"></span>
+        </div>
+      </div>
+
+      <div class="identity">
+        <h1 id="displayName" class="display-name" data-text="madison">madison</h1>
+        <div id="handle" class="handle">@madisonbeer</div>
+        <p id="bio" class="bio">𓂃˖ ࣪⊹ they say that honest love is a cage that makes you feel free.</p>
+      </div>
+
+      <div id="connections" class="connections">
+        <button class="connection" type="button" data-action="copy" data-value="madisonbeer" aria-label="Copy Discord username">
+          <span class="app-icon discord">D</span>
+          <span class="connection-copy"><small>discord</small><strong>madisonbeer</strong></span>
+        </button>
+        <a class="connection" href="https://t.me/eviltriad" target="_blank" rel="noopener noreferrer" aria-label="Open Telegram">
+          <span class="app-icon telegram">T</span>
+          <span class="connection-copy"><small>telegram</small><strong>eviltriad</strong></span>
+        </a>
+        <div class="connection connection-static" aria-label="TikTok username">
+          <span class="app-icon tiktok">♪</span>
+          <span class="connection-copy"><small>tiktok</small><strong>@pd</strong></span>
+        </div>
+      </div>
+
+      <section id="musicCard" class="music-card" aria-label="Music player">
+        <div class="music-main">
+          <img id="albumArt" class="album-art" src="album.png" alt="Album art" draggable="false">
+          <div class="track-info">
+            <span class="now-playing">now playing</span>
+            <strong id="songTitle">envy the leaves</strong>
+            <span id="songArtist">madison beer</span>
+            <div class="visualizer" aria-hidden="true">
+              <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            </div>
+          </div>
+          <button id="playButton" class="play-button" type="button" aria-label="Play">
+            <span id="playGlyph">▶</span>
+          </button>
+        </div>
+        <div class="progress-row">
+          <span id="currentTime">0:00</span>
+          <input id="progress" type="range" min="0" max="100" step="0.1" value="0" aria-label="Song progress">
+          <span id="duration">3:20</span>
+        </div>
+        <audio id="audio" preload="none" src="song.mp3"></audio>
+      </section>
+    </section>
+  </main>
+
+  <aside id="panel" class="panel" aria-hidden="true">
+    <div class="panel-head">
+      <div>
+        <span class="eyebrow">secret panel</span>
+        <h2>customize</h2>
+      </div>
+      <button id="closePanel" type="button" class="close-panel" aria-label="Close">×</button>
+    </div>
+
+    <div class="tabs">
+      <button type="button" class="tab active" data-tab="profile">profile</button>
+      <button type="button" class="tab" data-tab="name">name</button>
+      <button type="button" class="tab" data-tab="style">style</button>
+      <button type="button" class="tab" data-tab="effects">effects</button>
+      <button type="button" class="tab" data-tab="media">media</button>
+      <button type="button" class="tab" data-tab="save">save</button>
+    </div>
+
+    <div class="panel-body">
+      <section class="panel-section active" data-section="profile">
+        <label>name<input id="setName" type="text" value="madison"></label>
+        <label>handle<input id="setHandle" type="text" value="@madisonbeer"></label>
+        <label>bio<textarea id="setBio" rows="4">𓂃˖ ࣪⊹ they say that honest love is a cage that makes you feel free.</textarea></label>
+      </section>
+
+      <section class="panel-section" data-section="name">
+        <label>name font
+          <select id="setNameFont">
+            <option value="palatino">soft serif</option>
+            <option value="georgia">classic serif</option>
+            <option value="segoe">clean soft</option>
+            <option value="trebuchet">rounded clean</option>
+          </select>
+        </label>
+        <label>name color<input id="setNameColor" type="color" value="#f7fbff"></label>
+        <label class="switch"><span>shimmer</span><input id="setShimmer" type="checkbox" checked></label>
+        <label class="switch"><span>outline</span><input id="setOutline" type="checkbox"></label>
+        <label class="switch"><span>RGB</span><input id="setRgb" type="checkbox"></label>
+      </section>
+
+      <section class="panel-section" data-section="style">
+        <div class="preset-row">
+          <button type="button" class="preset" data-preset="locket">locket</button>
+          <button type="button" class="preset" data-preset="minimal">minimal</button>
+          <button type="button" class="preset" data-preset="glass">glass</button>
+        </div>
+        <label>background color<input id="setBackground" type="color" value="#aac6d1"></label>
+        <label>card darkness<input id="setCardDarkness" type="range" min="0.10" max="0.65" step="0.01" value="0.36"></label>
+        <label>card blur<input id="setCardBlur" type="range" min="0" max="36" step="1" value="18"></label>
+      </section>
+
+      <section class="panel-section" data-section="effects">
+        <label class="switch"><span>particles</span><input id="setParticles" type="checkbox" checked></label>
+        <label class="switch"><span>cursor glow</span><input id="setCursorGlow" type="checkbox" checked></label>
+        <label class="switch"><span>dot cursor</span><input id="setDotCursor" type="checkbox" checked></label>
+        <label class="switch"><span>card tilt</span><input id="setTilt" type="checkbox" checked></label>
+        <label class="switch"><span>background shift</span><input id="setParallax" type="checkbox" checked></label>
+      </section>
+
+      <section class="panel-section" data-section="media">
+        <label>avatar filename<input id="setAvatar" type="text" value="avatar.png"></label>
+        <label>album filename<input id="setAlbum" type="text" value="album.png"></label>
+        <label>song filename<input id="setSong" type="text" value="song.mp3"></label>
+        <label>background video filename<input id="setVideo" type="text" placeholder="background.mp4"></label>
+        <p class="hint">Leave background video blank to use the solid baby-blue background. All media should be in the repo root.</p>
+      </section>
+
+      <section class="panel-section" data-section="save">
+        <button id="saveLocal" type="button" class="panel-button">save in this browser</button>
+        <button id="resetLocal" type="button" class="panel-button secondary">reset defaults</button>
+        <p class="hint">This version intentionally makes no startup requests to external sites.</p>
+      </section>
+    </div>
+  </aside>
+
+  <div id="toast" class="toast" role="status"></div>
+  <script src="script.js"></script>
+</body>
+</html>
