@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#dcecff" />
+  <meta name="description" content="Minimal personalized profile page" />
+  <title>madison</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;700&family=Outfit:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="page-loader" class="page-loader" aria-hidden="true"><div class="loader-ring"></div></div>
+
+  <video id="bg-video" class="background-video" autoplay muted loop playsinline preload="auto">
+    <source src="assets/background.mp4" type="video/mp4" />
+  </video>
+  <div id="background-fallback" class="background-fallback"></div>
+  <div id="video-overlay" class="video-overlay"></div>
+  <div id="vignette" class="vignette"></div>
+  <canvas id="particles" class="particles" aria-hidden="true"></canvas>
+  <div id="cursor-glow" class="cursor-glow" aria-hidden="true"></div>
+  <div id="custom-cursor" class="custom-cursor" aria-hidden="true"></div>
+
+  <main class="page-shell">
+    <section id="profile-card" class="profile-card glass-card" aria-label="Profile">
+      <div class="avatar-wrap">
+        <div class="avatar-ring"></div>
+        <img id="avatar" src="assets/avatar.jpg" alt="Profile avatar" />
+        <div class="avatar-fallback">m</div>
+        <img id="avatar-decoration" class="avatar-decoration" src="https://cdn.discordapp.com/avatar-decoration-presets/a_40a4fe6585a6751fab66e6a903cdd100.png?size=160&passthrough=true" alt="" aria-hidden="true" />
+      </div>
+
+      <div class="identity">
+        <h1 id="display-name" class="display-name" data-text="madison"><span id="display-name-inner">madison</span></h1>
+        <p id="handle" class="handle">@madisonbeer</p>
+        <p id="bio" class="bio">𓂃˖ ࣪⊹ they say that honest love is a cage that makes you feel free.</p>
+      </div>
+
+      <div id="connections" class="connections" aria-label="Connections"></div>
+
+      <div id="music-card" class="music-card">
+        <div class="music-top">
+          <div class="album-shell">
+            <img id="album-art" src="assets/avatar.jpg" alt="Album art" />
+            <div class="album-glow"></div>
+          </div>
+          <div class="music-meta">
+            <span class="music-overline">now playing</span>
+            <strong id="song-title">Song Name</strong>
+            <span id="song-artist">Artist</span>
+            <div id="music-bars" class="music-bars" aria-hidden="true">
+              <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+          <a id="spotify-link" class="spotify-link" href="https://open.spotify.com/track/2HgvorjycrfcCHEhVCCErk" target="_blank" rel="noopener noreferrer">Spotify ↗</a>
+        </div>
+        <div class="track-progress-row">
+          <span id="current-time">0:00</span>
+          <input id="track-progress" type="range" min="0" max="100" value="0" step="0.1" aria-label="Song progress" />
+          <span id="duration">3:19</span>
+        </div>
+        <div id="spotify-embed" class="spotify-embed" aria-label="Spotify player"></div>
+      </div>
+    </section>
+  </main>
+
+  <button id="admin-close-hitbox" class="admin-close-hitbox" aria-hidden="true" tabindex="-1"></button>
+
+  <aside id="admin-panel" class="admin-panel" aria-hidden="true">
+    <div class="admin-header">
+      <div><span class="eyebrow">SECRET PANEL</span><h2>Customize profile</h2></div>
+      <button id="close-admin" class="admin-close" type="button" aria-label="Close panel">×</button>
+    </div>
+
+    <div class="admin-tabs" role="tablist">
+      <button class="admin-tab active" data-tab="profile" type="button">Profile</button>
+      <button class="admin-tab" data-tab="name" type="button">Name</button>
+      <button class="admin-tab" data-tab="links" type="button">Links</button>
+      <button class="admin-tab" data-tab="media" type="button">Media</button>
+      <button class="admin-tab" data-tab="style" type="button">Style</button>
+      <button class="admin-tab" data-tab="effects" type="button">Effects</button>
+      <button class="admin-tab" data-tab="save" type="button">Save</button>
+    </div>
+
+    <div class="admin-body">
+      <section class="admin-section active" data-section="profile">
+        <div class="section-heading"><strong>Profile</strong><span>Main text and avatar details.</span></div>
+        <label>Display name<input id="admin-name" type="text" maxlength="40" /></label>
+        <label>Handle<input id="admin-handle" type="text" maxlength="60" /></label>
+        <label>Bio<textarea id="admin-bio" rows="3" maxlength="220"></textarea></label>
+        <label>Avatar path / URL<input id="admin-avatar" type="text" placeholder="assets/avatar.jpg" /></label>
+        <label>Avatar decoration URL<input id="admin-decoration" type="text" placeholder="https://..." /></label>
+      </section>
+
+      <section class="admin-section" data-section="name">
+        <div class="section-heading"><strong>Name designer</strong><span>Choose fonts, colors, and subtle effects.</span></div>
+        <label>Name font
+          <select id="admin-name-font">
+            <option value="Playfair Display">Playfair Display</option>
+            <option value="Cormorant Garamond">Cormorant Garamond</option>
+            <option value="DM Sans">DM Sans</option>
+            <option value="Outfit">Outfit</option>
+            <option value="Space Grotesk">Space Grotesk</option>
+            <option value="Syne">Syne</option>
+          </select>
+        </label>
+        <div class="color-pair">
+          <label>Name color<input id="admin-name-color" type="color" /></label>
+          <label>RGB color 2<input id="admin-name-color-2" type="color" /></label>
+          <label>RGB color 3<input id="admin-name-color-3" type="color" /></label>
+        </div>
+        <label>Name size <span id="name-size-value" class="value-pill"></span><input id="admin-name-size" type="range" min="34" max="88" step="1" /></label>
+        <label>Letter spacing <span id="name-spacing-value" class="value-pill"></span><input id="admin-name-spacing" type="range" min="-4" max="8" step="0.5" /></label>
+        <label>Animation speed <span id="name-speed-value" class="value-pill"></span><input id="admin-name-speed" type="range" min="1" max="12" step="0.5" /></label>
+        <div class="toggle-grid">
+          <label class="toggle-row"><span>RGB / rainbow</span><input id="admin-name-rgb" type="checkbox" /></label>
+          <label class="toggle-row"><span>Shimmer</span><input id="admin-name-shimmer" type="checkbox" /></label>
+          <label class="toggle-row"><span>Outline</span><input id="admin-name-outline" type="checkbox" /></label>
+          <label class="toggle-row"><span>Soft shadow</span><input id="admin-name-shadow" type="checkbox" /></label>
+        </div>
+      </section>
+
+      <section class="admin-section" data-section="links">
+        <div class="section-heading"><strong>Connections</strong><span>Rounded icon cards with the username next to each icon.</span></div>
+        <div id="admin-connections" class="connection-editor"></div>
+        <button id="add-connection" class="panel-button secondary" type="button">+ Add connection</button>
+      </section>
+
+      <section class="admin-section" data-section="media">
+        <div class="section-heading"><strong>Media</strong><span>Background video is kept in the code even if you are not using it yet.</span></div>
+        <label>Background MP4 path / URL<input id="admin-video" type="text" placeholder="assets/background.mp4" /></label>
+        <label>Spotify track URL<input id="admin-spotify-url" type="text" placeholder="https://open.spotify.com/track/..." /></label>
+        <label>Album art path / URL<input id="admin-album-art" type="text" placeholder="https://..." /></label>
+        <label>Song title<input id="admin-song-title" type="text" maxlength="80" /></label>
+        <label>Artist<input id="admin-song-artist" type="text" maxlength="80" /></label>
+        <div class="toggle-grid">
+          <label class="toggle-row"><span>Autoplay music</span><input id="admin-autoplay" type="checkbox" /></label>
+          <label class="toggle-row"><span>Show music player</span><input id="admin-show-player" type="checkbox" /></label>
+        </div>
+      </section>
+
+      <section class="admin-section" data-section="style">
+        <div class="section-heading"><strong>Style</strong><span>Soft baby blue, glass card, and minimal layout.</span></div>
+        <div class="preset-grid">
+          <button class="preset-button" type="button" data-preset="locket">Locket Blue</button>
+          <button class="preset-button" type="button" data-preset="minimal">Minimal</button>
+          <button class="preset-button" type="button" data-preset="soft">Soft Glass</button>
+        </div>
+        <label>Page font
+          <select id="admin-font">
+            <option value="DM Sans">DM Sans</option>
+            <option value="Outfit">Outfit</option>
+            <option value="Space Grotesk">Space Grotesk</option>
+            <option value="Playfair Display">Playfair Display</option>
+          </select>
+        </label>
+        <label>Accent color<input id="admin-accent" type="color" /></label>
+        <label>Overlay darkness <span id="overlay-value" class="value-pill"></span><input id="admin-overlay" type="range" min="0" max="0.9" step="0.01" /></label>
+        <label>Card opacity <span id="card-opacity-value" class="value-pill"></span><input id="admin-card-opacity" type="range" min="0.02" max="0.35" step="0.01" /></label>
+        <label>Card blur <span id="blur-value" class="value-pill"></span><input id="admin-blur" type="range" min="0" max="42" step="1" /></label>
+        <label>Card width <span id="width-value" class="value-pill"></span><input id="admin-width" type="range" min="320" max="620" step="10" /></label>
+        <label>Card radius <span id="radius-value" class="value-pill"></span><input id="admin-radius" type="range" min="10" max="36" step="1" /></label>
+        <label class="toggle-row"><span>Card border</span><input id="admin-border" type="checkbox" /></label>
+      </section>
+
+      <section class="admin-section" data-section="effects">
+        <div class="section-heading"><strong>Effects</strong><span>Everything here can be turned on or off from the panel.</span></div>
+        <div class="toggle-grid">
+          <label class="toggle-row"><span>Particles</span><input id="admin-particles" type="checkbox" /></label>
+          <label class="toggle-row"><span>Cursor glow</span><input id="admin-cursor-glow" type="checkbox" /></label>
+          <label class="toggle-row"><span>Connection shimmer</span><input id="admin-shimmer" type="checkbox" /></label>
+          <label class="toggle-row"><span>Soft vignette</span><input id="admin-vignette" type="checkbox" /></label>
+          <label class="toggle-row"><span>Card hover tilt</span><input id="admin-card-tilt" type="checkbox" /></label>
+          <label class="toggle-row"><span>Background shift</span><input id="admin-background-shift" type="checkbox" /></label>
+          <label class="toggle-row"><span>Minimal dot cursor</span><input id="admin-minimal-cursor" type="checkbox" /></label>
+        </div>
+        <label>Particle amount <span id="particle-value" class="value-pill"></span><input id="admin-particle-count" type="range" min="0" max="120" step="5" /></label>
+      </section>
+
+      <section class="admin-section" data-section="save">
+        <div class="publish-card"><strong>Save this browser</strong><p>Keep your current setup on this device for previewing.</p><button id="save-local" class="panel-button" type="button">Save in browser</button></div>
+        <div class="publish-card"><strong>Publish on GitHub Pages</strong><p>Download a fresh <code>site-config.js</code> and replace the existing one in your repo.</p><button id="export-config" class="panel-button" type="button">Export permanent config</button></div>
+        <div class="publish-card danger-zone"><strong>Reset preview</strong><p>Clear browser overrides and return to the public config file.</p><button id="reset-local" class="panel-button secondary" type="button">Reset local settings</button></div>
+        <div id="save-message" class="save-message" role="status"></div>
+      </section>
+    </div>
+  </aside>
+
+  <div id="toast" class="toast" role="status"></div>
+  <script src="site-config.js"></script>
+  <script src="script.js"></script>
+  <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
+</body>
+</html>
