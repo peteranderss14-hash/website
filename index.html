@@ -8,7 +8,7 @@
   <title>madison</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;700&family=Outfit:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;700&family=Outfit:wght@300;400;500;600&family=Playfair+Display:wght@500;600;700&family=Quicksand:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -28,7 +28,7 @@
     <section id="profile-card" class="profile-card glass-card" aria-label="Profile">
       <div class="avatar-wrap">
         <div class="avatar-ring"></div>
-        <img id="avatar" src="assets/avatar.jpg" alt="Profile avatar" />
+        <img id="avatar" src="assets/avatar.png?v=2" alt="Profile avatar" />
         <div class="avatar-fallback">m</div>
         <img id="avatar-decoration" class="avatar-decoration" src="https://cdn.discordapp.com/avatar-decoration-presets/a_40a4fe6585a6751fab66e6a903cdd100.png?size=160&passthrough=true" alt="" aria-hidden="true" />
       </div>
@@ -44,7 +44,7 @@
       <div id="music-card" class="music-card">
         <div class="music-top">
           <div class="album-shell">
-            <img id="album-art" src="assets/avatar.jpg" alt="Album art" />
+            <img id="album-art" src="assets/avatar.png?v=2" alt="Album art" />
             <div class="album-glow"></div>
           </div>
           <div class="music-meta">
@@ -55,14 +55,16 @@
               <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
             </div>
           </div>
-          <a id="spotify-link" class="spotify-link" href="https://open.spotify.com/track/2HgvorjycrfcCHEhVCCErk" target="_blank" rel="noopener noreferrer">Spotify ↗</a>
+          <button id="play-button" class="play-button" type="button" aria-label="Play or pause">
+            <svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+            <svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>
+          </button>
         </div>
         <div class="track-progress-row">
           <span id="current-time">0:00</span>
           <input id="track-progress" type="range" min="0" max="100" value="0" step="0.1" aria-label="Song progress" />
-          <span id="duration">3:19</span>
+          <span id="duration">0:00</span>
         </div>
-        <div id="spotify-embed" class="spotify-embed" aria-label="Spotify player"></div>
       </div>
     </section>
   </main>
@@ -91,7 +93,7 @@
         <label>Display name<input id="admin-name" type="text" maxlength="40" /></label>
         <label>Handle<input id="admin-handle" type="text" maxlength="60" /></label>
         <label>Bio<textarea id="admin-bio" rows="3" maxlength="220"></textarea></label>
-        <label>Avatar path / URL<input id="admin-avatar" type="text" placeholder="assets/avatar.jpg" /></label>
+        <label>Avatar path / URL<input id="admin-avatar" type="text" placeholder="assets/avatar.png?v=2" /></label>
         <label>Avatar decoration URL<input id="admin-decoration" type="text" placeholder="https://..." /></label>
       </section>
 
@@ -101,6 +103,7 @@
           <select id="admin-name-font">
             <option value="Playfair Display">Playfair Display</option>
             <option value="Cormorant Garamond">Cormorant Garamond</option>
+            <option value="Quicksand">Quicksand</option>
             <option value="DM Sans">DM Sans</option>
             <option value="Outfit">Outfit</option>
             <option value="Space Grotesk">Space Grotesk</option>
@@ -132,8 +135,8 @@
       <section class="admin-section" data-section="media">
         <div class="section-heading"><strong>Media</strong><span>Background video is kept in the code even if you are not using it yet.</span></div>
         <label>Background MP4 path / URL<input id="admin-video" type="text" placeholder="assets/background.mp4" /></label>
-        <label>Spotify track URL<input id="admin-spotify-url" type="text" placeholder="https://open.spotify.com/track/..." /></label>
-        <label>Album art path / URL<input id="admin-album-art" type="text" placeholder="https://..." /></label>
+        <label>Song MP3 path / URL<input id="admin-audio" type="text" placeholder="assets/song.mp3" /></label>
+        <label>Album art path / URL<input id="admin-album-art" type="text" placeholder="assets/avatar.png?v=2" /></label>
         <label>Song title<input id="admin-song-title" type="text" maxlength="80" /></label>
         <label>Artist<input id="admin-song-artist" type="text" maxlength="80" /></label>
         <div class="toggle-grid">
@@ -190,8 +193,8 @@
   </aside>
 
   <div id="toast" class="toast" role="status"></div>
+  <audio id="audio-player" loop preload="metadata" src="assets/song.mp3"></audio>
   <script src="site-config.js"></script>
   <script src="script.js"></script>
-  <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
 </body>
 </html>

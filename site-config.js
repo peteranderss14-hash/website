@@ -4,7 +4,7 @@ window.SITE_CONFIG = {
     name: "madison",
     handle: "@madisonbeer",
     bio: "𓂃˖ ࣪⊹ they say that honest love is a cage that makes you feel free.",
-    avatar: "assets/avatar.jpg",
+    avatar: "assets/avatar.png?v=2",
     decoration: "https://cdn.discordapp.com/avatar-decoration-presets/a_40a4fe6585a6751fab66e6a903cdd100.png?size=160&passthrough=true"
   },
   connections: [
@@ -14,31 +14,31 @@ window.SITE_CONFIG = {
   ],
   media: {
     video: "assets/background.mp4",
-    spotifyUrl: "https://open.spotify.com/track/2HgvorjycrfcCHEhVCCErk?si=429adec8e4b04865",
-    albumArt: "https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02cce741931c17fe160736ca2a",
-    songTitle: "Envy the Leaves",
-    songArtist: "Madison Beer",
+    audio: "assets/song.mp3",
+    albumArt: "assets/avatar.png?v=2",
+    songTitle: "envy the leaves",
+    songArtist: "madison beer",
     autoplayMusic: true,
     showPlayer: true
   },
   style: {
-    font: "DM Sans",
+    font: "Quicksand",
     accent: "#dcecff",
-    overlay: 0.22,
-    cardOpacity: 0.12,
-    blur: 22,
+    overlay: 0,
+    cardOpacity: 0.24,
+    blur: 24,
     width: 470,
     radius: 28,
     border: true
   },
   nameStyle: {
-    font: "Playfair Display",
-    color: "#f7fbff",
-    color2: "#d5e9ff",
-    color3: "#eef2ff",
-    size: 62,
-    spacing: -1,
-    speed: 5,
+    font: "Cormorant Garamond",
+    color: "#f8fbfc",
+    color2: "#dcebf0",
+    color3: "#ffffff",
+    size: 64,
+    spacing: -0.5,
+    speed: 5.5,
     rgb: false,
     shimmer: true,
     outline: false,
@@ -52,6 +52,6 @@ window.SITE_CONFIG = {
     cardTilt: true,
     backgroundShift: true,
     minimalCursor: true,
-    particleCount: 34
+    particleCount: 30
   }
 };

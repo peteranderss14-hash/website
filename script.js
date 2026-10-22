@@ -25,8 +25,8 @@
     musicCard: $("music-card"),
     albumArt: $("album-art"),
     bars: [...document.querySelectorAll("#music-bars span")],
-    spotifyEmbed: $("spotify-embed"),
-    spotifyLink: $("spotify-link"),
+    audio: $("audio-player"),
+    play: $("play-button"),
     progress: $("track-progress"),
     current: $("current-time"),
     duration: $("duration"),
@@ -50,7 +50,7 @@
   const controls = {
     name: $("admin-name"), handle: $("admin-handle"), bio: $("admin-bio"), avatar: $("admin-avatar"), decoration: $("admin-decoration"),
     nameFont: $("admin-name-font"), nameColor: $("admin-name-color"), nameColor2: $("admin-name-color-2"), nameColor3: $("admin-name-color-3"), nameSize: $("admin-name-size"), nameSpacing: $("admin-name-spacing"), nameSpeed: $("admin-name-speed"), nameRgb: $("admin-name-rgb"), nameShimmer: $("admin-name-shimmer"), nameOutline: $("admin-name-outline"), nameShadow: $("admin-name-shadow"),
-    video: $("admin-video"), spotifyUrl: $("admin-spotify-url"), albumArt: $("admin-album-art"), songTitle: $("admin-song-title"), songArtist: $("admin-song-artist"), autoplay: $("admin-autoplay"), showPlayer: $("admin-show-player"),
+    video: $("admin-video"), audio: $("admin-audio"), albumArt: $("admin-album-art"), songTitle: $("admin-song-title"), songArtist: $("admin-song-artist"), autoplay: $("admin-autoplay"), showPlayer: $("admin-show-player"),
     font: $("admin-font"), accent: $("admin-accent"), overlay: $("admin-overlay"), cardOpacity: $("admin-card-opacity"), blur: $("admin-blur"), width: $("admin-width"), radius: $("admin-radius"), border: $("admin-border"),
     particles: $("admin-particles"), cursorGlow: $("admin-cursor-glow"), shimmer: $("admin-shimmer"), vignette: $("admin-vignette"), cardTilt: $("admin-card-tilt"), backgroundShift: $("admin-background-shift"), minimalCursor: $("admin-minimal-cursor"), particleCount: $("admin-particle-count")
   };
@@ -67,8 +67,8 @@
 
   const PRESETS = {
     locket: {
-      style: { accent: "#dcecff", overlay: 0.22, cardOpacity: 0.12, blur: 22, width: 470, radius: 28, border: true, font: "DM Sans" },
-      nameStyle: { font: "Playfair Display", color: "#f7fbff", color2: "#d5e9ff", color3: "#eef2ff", size: 62, spacing: -1, speed: 5, rgb: false, shimmer: true, outline: false, shadow: true },
+      style: { accent: "#dcecff", overlay: 0, cardOpacity: 0.24, blur: 24, width: 470, radius: 28, border: true, font: "Quicksand" },
+      nameStyle: { font: "Cormorant Garamond", color: "#f8fbfc", color2: "#dcebf0", color3: "#ffffff", size: 64, spacing: -0.5, speed: 5.5, rgb: false, shimmer: true, outline: false, shadow: true },
       effects: { particles: true, cursorGlow: true, shimmer: true, vignette: true, cardTilt: true, backgroundShift: true, minimalCursor: true, particleCount: 34 }
     },
     minimal: {
@@ -91,9 +91,10 @@
   let secretArmed = false;
   let armTimeout = null;
   let nameClicks = [];
-  let spotifyController = null;
-  let spotifyReady = false;
-  let spotifyState = { isPaused: true, duration: 199000, position: 0 };
+  let audioCtx = null;
+  let analyser = null;
+  let audioSource = null;
+  let freqData = null;
 
   function deepMerge(base, override) {
     const out = clone(base || {});
@@ -182,19 +183,19 @@
     const root = document.documentElement.style;
     root.setProperty("--accent", s.accent || "#dcecff");
     root.setProperty("--accent-rgb", rgbFromHex(s.accent || "#dcecff"));
-    root.setProperty("--overlay", String(s.overlay ?? .22));
-    root.setProperty("--card-opacity", String(s.cardOpacity ?? .12));
-    root.setProperty("--card-blur", `${Number(s.blur ?? 22)}px`);
+    root.setProperty("--overlay", String(s.overlay ?? 0));
+    root.setProperty("--card-opacity", String(s.cardOpacity ?? .24));
+    root.setProperty("--card-blur", `${Number(s.blur ?? 24)}px`);
     root.setProperty("--card-width", `${Number(s.width ?? 470)}px`);
     root.setProperty("--card-radius", `${Number(s.radius ?? 28)}px`);
-    root.setProperty("--page-font", `"${(s.font || "DM Sans").replace(/["\\]/g, "")}", sans-serif`);
-    root.setProperty("--name-font", `"${(n.font || "Playfair Display").replace(/["\\]/g, "")}", serif`);
-    root.setProperty("--name-color", n.color || "#f7fbff");
-    root.setProperty("--name-color-2", n.color2 || "#d5e9ff");
-    root.setProperty("--name-color-3", n.color3 || "#eef2ff");
-    root.setProperty("--name-size", `${Number(n.size ?? 62)}px`);
-    root.setProperty("--name-spacing", `${Number(n.spacing ?? -1)}px`);
-    root.setProperty("--name-speed", `${Number(n.speed ?? 5)}s`);
+    root.setProperty("--page-font", `"${(s.font || "Quicksand").replace(/["\\]/g, "")}", sans-serif`);
+    root.setProperty("--name-font", `"${(n.font || "Cormorant Garamond").replace(/["\\]/g, "")}", serif`);
+    root.setProperty("--name-color", n.color || "#f8fbfc");
+    root.setProperty("--name-color-2", n.color2 || "#dcebf0");
+    root.setProperty("--name-color-3", n.color3 || "#ffffff");
+    root.setProperty("--name-size", `${Number(n.size ?? 64)}px`);
+    root.setProperty("--name-spacing", `${Number(n.spacing ?? -.5)}px`);
+    root.setProperty("--name-speed", `${Number(n.speed ?? 5.5)}s`);
 
     els.nameInner.textContent = p.name || "madison";
     els.name.dataset.text = p.name || "madison";
@@ -202,20 +203,20 @@
     els.bio.textContent = p.bio || "";
     document.title = p.name || "madison";
 
-    els.songTitle.textContent = m.songTitle || "Song Name";
-    els.songArtist.textContent = m.songArtist || "Artist";
+    els.songTitle.textContent = m.songTitle || "envy the leaves";
+    els.songArtist.textContent = m.songArtist || "madison beer";
     els.musicCard.classList.toggle("hidden", !m.showPlayer);
 
-    els.avatar.src = p.avatar || "assets/avatar.jpg";
+    els.avatar.src = p.avatar || "assets/avatar.png?v=2";
     els.avatar.classList.remove("is-missing");
     els.avatarDecoration.src = p.decoration || "";
     els.avatarDecoration.classList.toggle("is-missing", !p.decoration);
 
-    els.albumArt.src = m.albumArt || p.avatar || "assets/avatar.jpg";
+    els.albumArt.src = m.albumArt || p.avatar || "assets/avatar.png?v=2";
 
-    els.spotifyLink.href = m.spotifyUrl || "https://open.spotify.com/track/2HgvorjycrfcCHEhVCCErk";
-    if (spotifyController && m.spotifyUrl) {
-      try { spotifyController.loadEntity(m.spotifyUrl); } catch {}
+    if (els.audio.getAttribute("src") !== (m.audio || "")) {
+      els.audio.src = m.audio || "";
+      els.audio.load();
     }
     const source = els.video.querySelector("source");
     if (source.getAttribute("src") !== (m.video || "")) {
@@ -246,31 +247,31 @@
     controls.avatar.value = p.avatar || "";
     controls.decoration.value = p.decoration || "";
 
-    controls.nameFont.value = n.font || "Playfair Display";
-    controls.nameColor.value = n.color || "#f7fbff";
-    controls.nameColor2.value = n.color2 || "#d5e9ff";
-    controls.nameColor3.value = n.color3 || "#eef2ff";
-    controls.nameSize.value = n.size ?? 62;
-    controls.nameSpacing.value = n.spacing ?? -1;
-    controls.nameSpeed.value = n.speed ?? 5;
+    controls.nameFont.value = n.font || "Cormorant Garamond";
+    controls.nameColor.value = n.color || "#f8fbfc";
+    controls.nameColor2.value = n.color2 || "#dcebf0";
+    controls.nameColor3.value = n.color3 || "#ffffff";
+    controls.nameSize.value = n.size ?? 64;
+    controls.nameSpacing.value = n.spacing ?? -.5;
+    controls.nameSpeed.value = n.speed ?? 5.5;
     controls.nameRgb.checked = !!n.rgb;
     controls.nameShimmer.checked = !!n.shimmer;
     controls.nameOutline.checked = !!n.outline;
     controls.nameShadow.checked = !!n.shadow;
 
     controls.video.value = m.video || "";
-    controls.spotifyUrl.value = m.spotifyUrl || "";
+    controls.audio.value = m.audio || "";
     controls.albumArt.value = m.albumArt || "";
     controls.songTitle.value = m.songTitle || "";
     controls.songArtist.value = m.songArtist || "";
     controls.autoplay.checked = m.autoplayMusic !== false;
     controls.showPlayer.checked = m.showPlayer !== false;
 
-    controls.font.value = s.font || "DM Sans";
+    controls.font.value = s.font || "Quicksand";
     controls.accent.value = s.accent || "#dcecff";
-    controls.overlay.value = s.overlay ?? .22;
-    controls.cardOpacity.value = s.cardOpacity ?? .12;
-    controls.blur.value = s.blur ?? 22;
+    controls.overlay.value = s.overlay ?? 0;
+    controls.cardOpacity.value = s.cardOpacity ?? .24;
+    controls.blur.value = s.blur ?? 24;
     controls.width.value = s.width ?? 470;
     controls.radius.value = s.radius ?? 28;
     controls.border.checked = s.border !== false;
@@ -292,7 +293,7 @@
       name: controls.name.value.trim() || "madison",
       handle: controls.handle.value.trim() || "@madisonbeer",
       bio: controls.bio.value.trim() || "",
-      avatar: controls.avatar.value.trim() || "assets/avatar.jpg",
+      avatar: controls.avatar.value.trim() || "assets/avatar.png?v=2",
       decoration: controls.decoration.value.trim()
     };
     config.nameStyle = {
@@ -310,10 +311,10 @@
     };
     config.media = {
       video: controls.video.value.trim() || "assets/background.mp4",
-      spotifyUrl: controls.spotifyUrl.value.trim() || "https://open.spotify.com/track/2HgvorjycrfcCHEhVCCErk",
-      albumArt: controls.albumArt.value.trim() || (config.profile?.avatar || "assets/avatar.jpg"),
-      songTitle: controls.songTitle.value.trim() || "Envy the Leaves",
-      songArtist: controls.songArtist.value.trim() || "Madison Beer",
+      audio: controls.audio.value.trim() || "assets/song.mp3",
+      albumArt: controls.albumArt.value.trim() || (config.profile?.avatar || "assets/avatar.png?v=2"),
+      songTitle: controls.songTitle.value.trim() || "envy the leaves",
+      songArtist: controls.songArtist.value.trim() || "madison beer",
       autoplayMusic: controls.autoplay.checked,
       showPlayer: controls.showPlayer.checked
     };
@@ -473,42 +474,16 @@
     }
   }
 
-  function updateSpotifyState(data) {
-    if (!data) return;
-    spotifyState = {
-      isPaused: !!data.isPaused,
-      duration: Number(data.duration || spotifyState.duration || 199000),
-      position: Number(data.position || 0)
-    };
-    const pct = spotifyState.duration ? (spotifyState.position / spotifyState.duration) * 100 : 0;
-    els.progress.value = String(Math.max(0, Math.min(100, pct)));
-    els.current.textContent = formatTime(spotifyState.position / 1000);
-    els.duration.textContent = formatTime(spotifyState.duration / 1000);
-    document.body.classList.toggle("spotify-playing", !spotifyState.isPaused);
+  async function tryAutoplay() {
+    if (config.media?.autoplayMusic === false || !els.audio.src) return;
+    try { await els.audio.play(); }
+    catch { /* ignored */ }
   }
 
-  function animateSpotifyBars() {
-    const t = (spotifyState.position || 0) / 1000;
-    const playing = !spotifyState.isPaused;
-    els.bars.forEach((bar, index) => {
-      const wave = Math.abs(Math.sin(t * (1.35 + index * .08) + index * .72));
-      const pulse = Math.abs(Math.sin(t * .48 + index * .37));
-      const height = playing ? 18 + (wave * .68 + pulse * .32) * 82 : 20 + (index % 3) * 8;
-      bar.style.height = `${height}%`;
-    });
-    const level = playing ? (.18 + Math.abs(Math.sin(t * .9)) * .32) : 0;
-    document.documentElement.style.setProperty("--audio-level", level.toFixed(3));
-    requestAnimationFrame(animateSpotifyBars);
-  }
-
-  function startSpotifyIfAllowed() {
-    if (!spotifyController || config.media?.autoplayMusic === false) return;
-    try { spotifyController.play(); } catch {}
-  }
-
-  function enableSpotifyOnFirstInteraction() {
-    const once = () => {
-      startSpotifyIfAllowed();
+  function enableAudioOnFirstInteraction() {
+    const once = async () => {
+      await tryAutoplay();
+      setupAnalyser();
       window.removeEventListener("pointerdown", once);
       window.removeEventListener("keydown", once);
     };
@@ -516,23 +491,55 @@
     window.addEventListener("keydown", once, { once: true });
   }
 
-  window.onSpotifyIframeApiReady = IFrameAPI => {
-    if (!els.spotifyEmbed) return;
-    const options = {
-      width: "100%",
-      height: 80,
-      url: config.media?.spotifyUrl || "https://open.spotify.com/track/2HgvorjycrfcCHEhVCCErk"
-    };
-    IFrameAPI.createController(els.spotifyEmbed, options, controller => {
-      spotifyController = controller;
-      controller.addListener("ready", () => {
-        spotifyReady = true;
-        startSpotifyIfAllowed();
+  function toggleAudio() {
+    if (els.audio.paused) {
+      els.audio.play().catch(() => showToast("Add a valid MP3 first"));
+      setupAnalyser();
+    } else {
+      els.audio.pause();
+    }
+  }
+
+  function updatePlayState() {
+    const playing = !els.audio.paused;
+    els.play.classList.toggle("is-playing", playing);
+    document.body.classList.toggle("audio-playing", playing);
+    if (!playing) {
+      document.documentElement.style.setProperty("--audio-level", "0");
+      els.bars.forEach((bar, index) => { bar.style.height = `${20 + (index % 3) * 8}%`; });
+    }
+  }
+
+  function setupAnalyser() {
+    if (audioCtx || !window.AudioContext && !window.webkitAudioContext) return;
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    try {
+      audioCtx = new AudioCtx();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 64;
+      freqData = new Uint8Array(analyser.frequencyBinCount);
+      audioSource = audioCtx.createMediaElementSource(els.audio);
+      audioSource.connect(analyser);
+      analyser.connect(audioCtx.destination);
+    } catch {
+      audioCtx = null;
+    }
+  }
+
+  function updateAudioVisuals() {
+    if (analyser && freqData && !els.audio.paused) {
+      analyser.getByteFrequencyData(freqData);
+      let total = 0;
+      for (let i = 0; i < freqData.length; i++) total += freqData[i];
+      const avg = total / freqData.length / 255;
+      document.documentElement.style.setProperty("--audio-level", avg.toFixed(3));
+      els.bars.forEach((bar, index) => {
+        const datum = freqData[(index * 2) % freqData.length] / 255;
+        bar.style.height = `${18 + datum * 82}%`;
       });
-      controller.addListener("playback_update", event => updateSpotifyState(event.data));
-      controller.addListener("playback_started", () => document.body.classList.add("spotify-playing"));
-    });
-  };
+    }
+    requestAnimationFrame(updateAudioVisuals);
+  }
 
   function resizeCanvas() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -640,7 +647,7 @@
     instantControls.forEach(control => {
       const eventName = control.type === "checkbox" || control.tagName === "SELECT" || control.type === "color" ? "change" : "input";
       control.addEventListener(eventName, liveUpdate);
-      if (control.id === "admin-avatar" || control.id === "admin-decoration" || control.id === "admin-spotify-url" || control.id === "admin-video" || control.id === "admin-album-art") {
+      if (control.id === "admin-avatar" || control.id === "admin-decoration" || control.id === "admin-audio" || control.id === "admin-video" || control.id === "admin-album-art") {
         control.addEventListener("change", liveUpdate);
       }
     });
@@ -661,16 +668,22 @@
       showToast("Returned to public config");
     });
 
-    els.progress.addEventListener("change", () => {
-      if (!spotifyController || !spotifyState.duration) return;
-      const seconds = Math.round((Number(els.progress.value) / 100) * spotifyState.duration / 1000);
-      try { spotifyController.seek(seconds); } catch {}
+    els.play.addEventListener("click", toggleAudio);
+    els.audio.addEventListener("play", () => { updatePlayState(); if (audioCtx?.state === "suspended") audioCtx.resume(); setupAnalyser(); });
+    els.audio.addEventListener("pause", updatePlayState);
+    els.audio.addEventListener("loadedmetadata", () => { els.duration.textContent = formatTime(els.audio.duration); });
+    els.audio.addEventListener("timeupdate", () => {
+      els.current.textContent = formatTime(els.audio.currentTime);
+      els.progress.value = els.audio.duration ? String((els.audio.currentTime / els.audio.duration) * 100) : "0";
+    });
+    els.progress.addEventListener("input", () => {
+      if (els.audio.duration) els.audio.currentTime = (Number(els.progress.value) / 100) * els.audio.duration;
     });
 
     els.avatar.addEventListener("error", () => els.avatar.classList.add("is-missing"));
     els.avatarDecoration.addEventListener("error", () => els.avatarDecoration.classList.add("is-missing"));
     els.video.addEventListener("error", () => els.video.classList.add("is-missing"));
-    els.albumArt.addEventListener("error", () => { els.albumArt.src = config.profile?.avatar || "assets/avatar.jpg"; });
+    els.albumArt.addEventListener("error", () => { els.albumArt.src = config.profile?.avatar || "assets/avatar.png?v=2"; });
 
     window.addEventListener("mousemove", e => {
       els.glow.style.left = `${e.clientX}px`;
@@ -696,6 +709,6 @@
   resizeCanvas();
   if (animationId) cancelAnimationFrame(animationId);
   animateParticles();
-  animateSpotifyBars();
-  enableSpotifyOnFirstInteraction();
+  updateAudioVisuals();
+  tryAutoplay();
 })();
