@@ -625,8 +625,21 @@
     els.fallback.style.transform = transform;
   }
 
+  function revealSite() {
+    if (document.body.classList.contains("ready")) return;
+    document.body.classList.add("ready");
+    els.loader?.classList.add("hidden");
+  }
+
   function bindEvents() {
-    window.addEventListener("load", () => setTimeout(() => { els.loader.classList.add("hidden"); document.body.classList.add("ready"); }, 170));
+    // Do not wait for every remote font/media asset. Missing optional files must never trap the page on the loader.
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => setTimeout(revealSite, 80), { once: true });
+    } else {
+      setTimeout(revealSite, 80);
+    }
+    window.addEventListener("load", revealSite, { once: true });
+    setTimeout(revealSite, 1600);
     document.addEventListener("keydown", secretKeyListener);
     els.name.addEventListener("click", handleNameClick);
     els.closePanel.addEventListener("click", closeAdmin);
@@ -703,12 +716,13 @@
     enableAudioOnFirstInteraction();
   }
 
-  applyConfig();
-  fillPanel();
+  try { applyConfig(); } catch (error) { console.error("Profile config failed:", error); }
+  try { fillPanel(); } catch (error) { console.error("Panel setup failed:", error); }
   bindEvents();
-  resizeCanvas();
+  try { resizeCanvas(); } catch (error) { console.error("Particle canvas failed:", error); }
   if (animationId) cancelAnimationFrame(animationId);
-  animateParticles();
-  updateAudioVisuals();
+  try { animateParticles(); } catch (error) { console.error("Particle animation failed:", error); }
+  try { updateAudioVisuals(); } catch (error) { console.error("Audio visualization failed:", error); }
   tryAutoplay();
+  setTimeout(revealSite, 100);
 })();
