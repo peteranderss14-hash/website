@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14202a">
+<title>madison</title>
+<style>
+:root{
+  --accent:#90bad6;
+  --accent-rgb:144,186,214;
+  --name:#f8fbff;
+  --card-alpha:.56;
+  --card-blur:18px;
+  --shade-alpha:.34;
+  --text:#f7fbff;
+  --muted:rgba(233,243,249,.68);
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;min-height:100%;background:#14202a}
+body{min-height:100vh;overflow-x:hidden;color:var(--text);font-family:"Segoe UI","Avenir Next",Arial,sans-serif}
+button,input,textarea{font:inherit}button{color:inherit}a{color:inherit;text-decoration:none}
+
+/* Background lives ABOVE the document background, never behind it. */
+.scene{position:fixed;inset:0;z-index:0;overflow:hidden;background:#14202a;pointer-events:none}
+.fallback{position:absolute;inset:-3%;background:radial-gradient(circle at 50% 18%,#647e8f 0%,#304451 36%,#14202a 76%);transform:scale(1.04)}
+#backgroundVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.035);transition:opacity .55s ease,transform .14s ease-out;background:#14202a}
+#backgroundVideo.visible{opacity:1}
+.shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,10,15,calc(var(--shade-alpha)*.68)),rgba(5,10,15,var(--shade-alpha)) 52%,rgba(4,8,12,calc(var(--shade-alpha)*1.16)))}
+#particles{position:absolute;inset:0;width:100%;height:100%}
+#cursorGlow{position:fixed;left:0;top:0;width:340px;height:340px;border-radius:50%;transform:translate(-50%,-50%);opacity:0;background:radial-gradient(circle,rgba(255,255,255,.12),rgba(var(--accent-rgb),.055) 34%,transparent 69%);filter:blur(10px);transition:opacity .2s ease}
+body.glow-on #cursorGlow{opacity:1}
+
+.page{position:relative;z-index:10;min-height:100vh;display:grid;place-items:center;padding:30px 16px;perspective:1100px}
+.card{position:relative;width:min(470px,calc(100vw - 28px));padding:31px 25px 21px;border-radius:30px;text-align:center;background:rgba(7,14,20,var(--card-alpha));border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(var(--card-blur)) saturate(112%);-webkit-backdrop-filter:blur(var(--card-blur)) saturate(112%);box-shadow:0 30px 85px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.07);transition:transform .14s ease-out,background .2s ease,backdrop-filter .2s ease;overflow:hidden}
+.card:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(135deg,rgba(255,255,255,.085),transparent 27%,transparent 73%,rgba(var(--accent-rgb),.075))}
+
+.avatar-wrap{position:relative;width:108px;height:108px;margin:0 auto 18px;border-radius:50%;isolation:isolate}
+.avatar-wrap img{position:absolute;inset:0;z-index:3;width:100%;height:100%;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,.28);box-shadow:0 13px 38px rgba(0,0,0,.26);background:#263844}
+.avatar-halo{position:absolute;inset:-12px;border-radius:50%;background:radial-gradient(circle,rgba(var(--accent-rgb),.22),transparent 66%);filter:blur(9px)}
+.orbit{position:absolute;z-index:4;border:1px solid rgba(178,218,242,.58);border-radius:50%;pointer-events:none}.orbit.a{inset:-7px;transform:rotate(-18deg) scaleY(.7)}.orbit.b{inset:-11px 4px;transform:rotate(27deg) scaleY(.86);opacity:.62}
+.star{position:absolute;z-index:5;color:#e1f4ff;text-shadow:0 0 12px rgba(var(--accent-rgb),.72);pointer-events:none}.star.one{right:-6px;top:16px;font-size:15px}.star.two{left:-3px;bottom:12px;font-size:12px}
+
+.identity{display:flex;flex-direction:column;align-items:center}
+#displayName{position:relative;isolation:isolate;margin:0;width:fit-content;color:var(--name);font-family:"Palatino Linotype","Book Antiqua",Palatino,Georgia,serif;font-size:clamp(44px,11vw,64px);font-weight:400;line-height:.95;letter-spacing:-2px;text-transform:lowercase;text-shadow:0 8px 30px rgba(0,0,0,.28);cursor:pointer;user-select:none}
+#displayName span{position:relative;z-index:2}
+body.shimmer-on #displayName:after{content:attr(data-text);position:absolute;inset:0;z-index:3;color:transparent;background:linear-gradient(112deg,transparent 23%,rgba(255,255,255,.85) 46%,transparent 68%);background-size:240% 100%;background-clip:text;-webkit-background-clip:text;animation:sweep 5.5s ease-in-out infinite;opacity:.45;pointer-events:none}@keyframes sweep{0%,24%{background-position:150% 0}76%,100%{background-position:-130% 0}}
+#handle{margin:8px 0 0;color:rgba(224,237,245,.68);font-size:12px;letter-spacing:.15em;text-transform:lowercase}
+#bio{max-width:350px;margin:12px 0 0;color:rgba(235,244,249,.72);font-family:Georgia,"Times New Roman",serif;font-size:13px;line-height:1.6;font-style:italic}
+
+.connections{display:flex;flex-direction:column;gap:9px;margin:20px 0 18px}
+.connection{position:relative;display:flex;align-items:center;gap:12px;width:100%;min-height:46px;padding:10px 13px;border-radius:17px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.1);text-align:left;overflow:hidden;transition:transform .2s ease,background .2s ease,border-color .2s ease;cursor:pointer}
+.connection:hover{transform:translateY(-3px);background:rgba(255,255,255,.085);border-color:rgba(var(--accent-rgb),.28)}.connection.static{cursor:default}.connection.static:hover{transform:none}
+.connection-icon{width:31px;height:31px;flex:0 0 31px;border-radius:11px;display:grid;place-items:center;background:rgba(var(--accent-rgb),.13);border:1px solid rgba(var(--accent-rgb),.18);color:#bad9eb}.connection-icon svg{width:16px;height:16px;fill:currentColor}
+.connection-text{display:flex;flex-direction:column;min-width:0}.connection-label{color:rgba(225,237,245,.48);font-size:9px;letter-spacing:.13em;text-transform:uppercase}.connection-value{margin-top:1px;color:#eef8fd;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.connection-action{margin-left:auto;color:rgba(226,238,246,.36);font-size:11px}
+
+.player{padding:15px 15px 12px;border-radius:20px;background:rgba(3,9,14,.24);border:1px solid rgba(255,255,255,.09);text-align:left}
+.track-head{display:flex;align-items:center;gap:14px}.track-copy{min-width:0;flex:1}.eyebrow{display:block;color:rgba(194,219,234,.47);font-size:9px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:3px}.track-copy strong{display:block;color:#f4fafd;font-family:"Palatino Linotype",Georgia,serif;font-size:17px;font-weight:400;text-transform:lowercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.track-copy span.artist{display:block;margin-top:2px;color:rgba(211,227,237,.59);font-size:11px;text-transform:lowercase}
+#playButton{width:40px;height:40px;flex:0 0 40px;border-radius:50%;border:1px solid rgba(var(--accent-rgb),.2);background:rgba(var(--accent-rgb),.1);display:grid;place-items:center;cursor:pointer;color:#ddf1fc;transition:transform .2s ease,background .2s ease}#playButton:hover{transform:scale(1.04);background:rgba(var(--accent-rgb),.16)}#playButton svg{width:18px;height:18px;fill:currentColor}#playButton .pause{display:none}#playButton.playing .play{display:none}#playButton.playing .pause{display:block}
+.progress-row{display:grid;grid-template-columns:32px minmax(0,1fr) 32px;align-items:center;gap:9px;margin-top:13px;color:rgba(211,226,236,.48);font-size:9px}.progress-row span:last-child{text-align:right}
+input[type=range]{width:100%;height:4px;appearance:none;-webkit-appearance:none;border-radius:99px;background:rgba(255,255,255,.12);outline:none}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;border-radius:50%;background:#e8f6fd;border:0;box-shadow:0 0 12px rgba(var(--accent-rgb),.38)}input[type=range]::-moz-range-thumb{width:11px;height:11px;border:0;border-radius:50%;background:#e8f6fd}
+
+/* Entry screen never waits for media. */
+#enterScreen{position:fixed;inset:0;z-index:100;display:grid;place-items:center;cursor:pointer;overflow:hidden;transition:opacity .55s ease,visibility .55s ease;background:rgba(10,18,25,.12)}#enterScreen.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.entry-blur{position:absolute;inset:-25px;backdrop-filter:blur(20px) saturate(78%);-webkit-backdrop-filter:blur(20px) saturate(78%);background:rgba(9,16,22,.28)}
+.entry-box{position:relative;display:flex;flex-direction:column;align-items:center;gap:7px;padding:25px 34px;border-radius:28px;background:rgba(10,18,25,.15);border:1px solid rgba(255,255,255,.12);box-shadow:0 22px 70px rgba(0,0,0,.16)}
+.entry-spark{color:#e2f4ff;font-size:16px;text-shadow:0 0 18px rgba(var(--accent-rgb),.7);animation:float 2.4s ease-in-out infinite}.entry-title{font-family:"Segoe Print","Bradley Hand","Comic Sans MS",cursive;color:#f5fbff;font-size:24px;letter-spacing:.015em;text-shadow:0 4px 24px rgba(0,0,0,.2)}.entry-sub{color:rgba(231,241,248,.52);font-size:9px;letter-spacing:.2em;text-transform:uppercase}@keyframes float{50%{transform:translateY(-4px) rotate(12deg)}}
+
+#dotCursor{position:fixed;z-index:130;width:7px;height:7px;border-radius:50%;background:#effaff;box-shadow:0 0 12px rgba(255,255,255,.5);transform:translate(-50%,-50%);pointer-events:none;opacity:0;transition:width .14s ease,height .14s ease,opacity .2s ease}@media(pointer:fine){body.entered #dotCursor{opacity:.86}body.entered,body.entered a,body.entered button,body.entered input[type=range]{cursor:none}}
+#toast{position:fixed;left:50%;bottom:18px;z-index:150;transform:translate(-50%,10px);padding:9px 13px;border-radius:999px;background:rgba(5,10,14,.92);border:1px solid rgba(255,255,255,.09);color:#f5fbff;font-size:11px;opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease}#toast.show{opacity:1;transform:translate(-50%,0)}
+
+#panelBackdrop{position:fixed;inset:0;z-index:109;border:0;background:rgba(0,0,0,.14);backdrop-filter:blur(3px);display:none}#panelBackdrop.show{display:block}
+#adminPanel{position:fixed;top:16px;right:16px;bottom:16px;z-index:110;width:min(420px,calc(100vw - 24px));display:flex;flex-direction:column;padding:17px;border-radius:26px;background:rgba(11,18,24,.96);border:1px solid rgba(255,255,255,.1);box-shadow:0 30px 80px rgba(0,0,0,.38);backdrop-filter:blur(22px);transform:translateX(calc(100% + 30px));transition:transform .32s ease}#adminPanel.open{transform:translateX(0)}
+.panel-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.panel-label{display:block;color:rgba(215,231,241,.45);font-size:9px;letter-spacing:.16em;text-transform:uppercase}.panel-header h2{margin:4px 0 0;font-family:Georgia,serif;font-weight:400;font-size:22px}.close{width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);font-size:22px;cursor:pointer}
+.tabs{display:flex;gap:7px;overflow:auto;padding:14px 0 11px;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}.tab{flex:0 0 auto;padding:7px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);color:rgba(226,238,245,.54);font-size:10px;cursor:pointer}.tab.active{color:#f7fbff;background:rgba(var(--accent-rgb),.14);border-color:rgba(var(--accent-rgb),.2)}
+.panel-body{overflow:auto;padding-right:3px}.section{display:none;gap:11px}.section.active{display:grid}.section label{display:grid;gap:6px;color:rgba(231,241,247,.72);font-size:11px}.section input[type=text],.section textarea{width:100%;border:1px solid rgba(255,255,255,.08);border-radius:11px;background:rgba(255,255,255,.04);color:#fff;padding:10px 11px;outline:none}.section textarea{resize:vertical}.section input[type=color]{width:100%;height:40px;border:1px solid rgba(255,255,255,.08);border-radius:11px;background:rgba(255,255,255,.04);padding:4px}.toggle{display:flex!important;align-items:center;justify-content:space-between;gap:10px;min-height:42px;padding:10px 11px;border:1px solid rgba(255,255,255,.07);border-radius:12px;background:rgba(255,255,255,.025)}.toggle input{width:18px;height:18px}.save-box{display:grid;gap:8px;padding:13px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07)}.save-box p{margin:0;color:rgba(222,235,243,.48);font-size:11px;line-height:1.5}.panel-button{padding:10px 12px;border-radius:11px;border:1px solid rgba(var(--accent-rgb),.2);background:rgba(var(--accent-rgb),.12);cursor:pointer}.panel-button.secondary{border-color:rgba(255,255,255,.08);background:rgba(255,255,255,.04)}
+@media(max-width:560px){.page{padding:18px 14px}.card{padding:28px 18px 18px;border-radius:26px}.avatar-wrap{width:100px;height:100px}#bio{font-size:12.5px}.entry-box{padding:22px 30px}.entry-title{font-size:22px}#adminPanel{top:12px;right:12px;bottom:12px;width:calc(100vw - 24px)}}
+</style>
+</head>
+<body>
+<div class="scene" aria-hidden="true">
+  <div class="fallback"></div>
+  <video id="backgroundVideo" muted loop playsinline preload="none"></video>
+  <div class="shade"></div>
+  <canvas id="particles"></canvas>
+  <div id="cursorGlow"></div>
+</div>
+
+<main class="page">
+  <section id="profileCard" class="card" aria-label="Profile">
+    <div class="avatar-wrap">
+      <div class="avatar-halo"></div>
+      <img id="avatar" src="avatar-american-girl-v3.jpg" alt="Profile picture">
+      <span class="orbit a"></span><span class="orbit b"></span><span class="star one">✦</span><span class="star two">✧</span>
+    </div>
+    <div class="identity">
+      <h1 id="displayName" data-text="madison"><span>madison</span></h1>
+      <p id="handle">@madisonbeer</p>
+      <p id="bio">𓂃˖ ࣪⊹ they say that honest love is a cage that makes you feel free.</p>
+    </div>
+    <div id="connections" class="connections"></div>
+    <section class="player" aria-label="Music player">
+      <div class="track-head">
+        <div class="track-copy"><span class="eyebrow">now playing</span><strong id="songTitle">american girl</strong><span id="songArtist" class="artist">tiffany day</span></div>
+        <button id="playButton" type="button" aria-label="Play or pause">
+          <svg class="play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          <svg class="pause" viewBox="0 0 24 24"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>
+        </button>
+      </div>
+      <div class="progress-row"><span id="currentTime">0:00</span><input id="progress" type="range" min="0" max="100" step="0.1" value="0"><span id="duration">0:00</span></div>
+    </section>
+  </section>
+</main>
+
+<div id="enterScreen" role="button" tabindex="0" aria-label="Click to enter">
+  <div class="entry-blur"></div>
+  <div class="entry-box"><span class="entry-spark">✦</span><span class="entry-title">click to enter</span><span class="entry-sub">american girl</span></div>
+</div>
+<div id="dotCursor"></div><div id="toast" role="status" aria-live="polite"></div>
+
+<button id="panelBackdrop" aria-hidden="true" tabindex="-1"></button>
+<aside id="adminPanel" aria-hidden="true">
+  <div class="panel-header"><div><span class="panel-label">secret panel</span><h2>customize</h2></div><button id="closePanel" class="close" type="button">×</button></div>
+  <div class="tabs"><button class="tab active" data-tab="profile">profile</button><button class="tab" data-tab="style">style</button><button class="tab" data-tab="effects">effects</button><button class="tab" data-tab="save">save</button></div>
+  <div class="panel-body">
+    <section class="section active" data-section="profile"><label>name<input id="adminName" type="text"></label><label>handle<input id="adminHandle" type="text"></label><label>bio<textarea id="adminBio" rows="3"></textarea></label></section>
+    <section class="section" data-section="style"><label>accent<input id="adminAccent" type="color"></label><label>name color<input id="adminNameColor" type="color"></label><label>card darkness <span id="cardAlphaValue"></span><input id="adminCardAlpha" type="range" min="0.22" max="0.78" step="0.01"></label><label>card blur <span id="cardBlurValue"></span><input id="adminCardBlur" type="range" min="0" max="34" step="1"></label><label>video darkness <span id="shadeValue"></span><input id="adminShade" type="range" min="0" max="0.72" step="0.01"></label></section>
+    <section class="section" data-section="effects"><label class="toggle"><span>name shimmer</span><input id="adminShimmer" type="checkbox"></label><label class="toggle"><span>particles</span><input id="adminParticles" type="checkbox"></label><label class="toggle"><span>cursor glow</span><input id="adminGlow" type="checkbox"></label><label class="toggle"><span>card tilt</span><input id="adminTilt" type="checkbox"></label><label class="toggle"><span>video parallax</span><input id="adminParallax" type="checkbox"></label></section>
+    <section class="section" data-section="save"><div class="save-box"><strong>save on this browser</strong><p>Stores only colors/text/effects. Media filenames stay fixed so they cannot be accidentally broken.</p><button id="saveLocal" class="panel-button">save settings</button></div><div class="save-box"><strong>reset</strong><p>Return to the verified default setup.</p><button id="resetLocal" class="panel-button secondary">reset settings</button></div></section>
+  </div>
+</aside>
+<audio id="audioPlayer" preload="none" loop></audio>
+
+<script>
+(()=>{
+'use strict';
+const STORAGE_KEY='american-girl-profile-verified-v3';
+const DEFAULTS={
+ profile:{name:'madison',handle:'@madisonbeer',bio:'𓂃˖ ࣪⊹ they say that honest love is a cage that makes you feel free.'},
+ style:{accent:'#90bad6',nameColor:'#f8fbff',cardAlpha:.56,cardBlur:18,shade:.34},
+ effects:{shimmer:true,particles:true,cursorGlow:true,tilt:true,parallax:true}
+};
+const CONNECTIONS=[
+ {label:'discord',value:'madisonbeer',mode:'copy',target:'madisonbeer'},
+ {label:'telegram',value:'eviltriad',mode:'link',target:'https://t.me/eviltriad'},
+ {label:'tiktok',value:'@pd',mode:'static',target:''}
+];
+const $=id=>document.getElementById(id); const clone=v=>JSON.parse(JSON.stringify(v));
+const el={video:$('backgroundVideo'),audio:$('audioPlayer'),enter:$('enterScreen'),card:$('profileCard'),avatar:$('avatar'),name:$('displayName'),nameSpan:$('displayName').querySelector('span'),handle:$('handle'),bio:$('bio'),connections:$('connections'),play:$('playButton'),progress:$('progress'),current:$('currentTime'),duration:$('duration'),glow:$('cursorGlow'),particles:$('particles'),cursor:$('dotCursor'),toast:$('toast'),panel:$('adminPanel'),backdrop:$('panelBackdrop'),close:$('closePanel'),tabs:[...document.querySelectorAll('.tab')],sections:[...document.querySelectorAll('.section')],adminName:$('adminName'),adminHandle:$('adminHandle'),adminBio:$('adminBio'),adminAccent:$('adminAccent'),adminNameColor:$('adminNameColor'),adminCardAlpha:$('adminCardAlpha'),adminCardBlur:$('adminCardBlur'),adminShade:$('adminShade'),adminShimmer:$('adminShimmer'),adminParticles:$('adminParticles'),adminGlow:$('adminGlow'),adminTilt:$('adminTilt'),adminParallax:$('adminParallax'),cardAlphaValue:$('cardAlphaValue'),cardBlurValue:$('cardBlurValue'),shadeValue:$('shadeValue'),save:$('saveLocal'),reset:$('resetLocal')};
+const icons={discord:'<svg viewBox="0 0 24 24"><path d="M19.5 5.34A16.3 16.3 0 0 0 15.44 4l-.5 1.02a15.1 15.1 0 0 0-5.88 0L8.56 4A16.4 16.4 0 0 0 4.5 5.35C1.93 9.13 1.23 12.82 1.58 16.45a16.5 16.5 0 0 0 4.98 2.5l1.2-1.65a10.6 10.6 0 0 1-1.89-.9l.47-.37c3.64 1.68 7.6 1.68 11.2 0l.48.37c-.61.35-1.25.65-1.9.9l1.2 1.65a16.45 16.45 0 0 0 4.98-2.5c.42-4.2-.72-7.85-2.8-11.11ZM8.7 14.24c-1.1 0-2-1.01-2-2.25s.88-2.25 2-2.25c1.13 0 2.02 1.02 2 2.25 0 1.24-.88 2.25-2 2.25Zm6.6 0c-1.1 0-2-1.01-2-2.25s.88-2.25 2-2.25c1.13 0 2.02 1.02 2 2.25 0 1.24-.87 2.25-2 2.25Z"/></svg>',telegram:'<svg viewBox="0 0 24 24"><path d="M21.94 4.66 18.92 19c-.23 1.01-.82 1.26-1.66.78l-4.6-3.39-2.22 2.14c-.25.25-.45.45-.92.45l.33-4.68 8.51-7.69c.37-.33-.08-.52-.57-.19L7.27 13.05 2.74 11.64c-.98-.31-1-.98.2-1.45L20.66 3.36c.82-.3 1.54.2 1.28 1.3Z"/></svg>',tiktok:'<svg viewBox="0 0 24 24"><path d="M16.7 3c.35 2.08 1.55 3.32 3.6 3.48v3.02a8.1 8.1 0 0 1-3.57-.83v6.25A6.08 6.08 0 1 1 11.48 8.9v3.07a3.05 3.05 0 1 0 2.22 2.95V3h3Z"/></svg>'};
+let config=loadConfig(),entered=false,toastTimer,nameClicks=[],secretArmed=false,secretBuffer='',secretTimer,particleList=[],raf=0;
+function loadConfig(){try{const raw=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');return raw?{profile:{...DEFAULTS.profile,...(raw.profile||{})},style:{...DEFAULTS.style,...(raw.style||{})},effects:{...DEFAULTS.effects,...(raw.effects||{})}}:clone(DEFAULTS)}catch{return clone(DEFAULTS)}}
+function hexRgb(hex){const h=/^#[0-9a-f]{6}$/i.test(hex)?hex:'#90bad6';return `${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),16)},${parseInt(h.slice(5,7),16)}`}
+function esc(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function toast(t){clearTimeout(toastTimer);el.toast.textContent=t;el.toast.classList.add('show');toastTimer=setTimeout(()=>el.toast.classList.remove('show'),1800)}
+function renderConnections(){el.connections.replaceChildren();CONNECTIONS.forEach(item=>{const n=item.mode==='link'?document.createElement('a'):document.createElement('button');n.className='connection'+(item.mode==='static'?' static':'');if(n.tagName==='BUTTON')n.type='button';n.innerHTML=`<span class="connection-icon">${icons[item.label]}</span><span class="connection-text"><span class="connection-label">${esc(item.label)}</span><span class="connection-value">${esc(item.value)}</span></span><span class="connection-action">${item.mode==='copy'?'copy':item.mode==='link'?'↗':''}</span>`;if(item.mode==='copy')n.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(item.target);toast('discord copied')}catch{toast(item.target)}});if(item.mode==='link'){n.href=item.target;n.target='_blank';n.rel='noopener noreferrer'}el.connections.appendChild(n)})}
+function apply(){const r=document.documentElement.style;r.setProperty('--accent',config.style.accent);r.setProperty('--accent-rgb',hexRgb(config.style.accent));r.setProperty('--name',config.style.nameColor);r.setProperty('--card-alpha',config.style.cardAlpha);r.setProperty('--card-blur',config.style.cardBlur+'px');r.setProperty('--shade-alpha',config.style.shade);el.nameSpan.textContent=config.profile.name;el.name.dataset.text=config.profile.name;el.handle.textContent=config.profile.handle;el.bio.textContent=config.profile.bio;document.title=config.profile.name;document.body.classList.toggle('shimmer-on',!!config.effects.shimmer);document.body.classList.toggle('glow-on',!!config.effects.cursorGlow);renderConnections();initParticles()}
+function fillPanel(){el.adminName.value=config.profile.name;el.adminHandle.value=config.profile.handle;el.adminBio.value=config.profile.bio;el.adminAccent.value=config.style.accent;el.adminNameColor.value=config.style.nameColor;el.adminCardAlpha.value=config.style.cardAlpha;el.adminCardBlur.value=config.style.cardBlur;el.adminShade.value=config.style.shade;el.adminShimmer.checked=config.effects.shimmer;el.adminParticles.checked=config.effects.particles;el.adminGlow.checked=config.effects.cursorGlow;el.adminTilt.checked=config.effects.tilt;el.adminParallax.checked=config.effects.parallax;updateLabels()}
+function updateLabels(){el.cardAlphaValue.textContent=Number(config.style.cardAlpha).toFixed(2);el.cardBlurValue.textContent=config.style.cardBlur+'px';el.shadeValue.textContent=Number(config.style.shade).toFixed(2)}
+function readPanel(){config.profile.name=el.adminName.value.trim()||'madison';config.profile.handle=el.adminHandle.value.trim()||'@madisonbeer';config.profile.bio=el.adminBio.value.trim();config.style.accent=el.adminAccent.value;config.style.nameColor=el.adminNameColor.value;config.style.cardAlpha=Number(el.adminCardAlpha.value);config.style.cardBlur=Number(el.adminCardBlur.value);config.style.shade=Number(el.adminShade.value);config.effects.shimmer=el.adminShimmer.checked;config.effects.particles=el.adminParticles.checked;config.effects.cursorGlow=el.adminGlow.checked;config.effects.tilt=el.adminTilt.checked;config.effects.parallax=el.adminParallax.checked}
+function live(){readPanel();apply();updateLabels()}
+function fmt(s){return Number.isFinite(s)?`${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`:'0:00'}
+function ensureMedia(){if(!el.audio.src){el.audio.src='american-girl-v3.mp3';el.audio.load()}if(!el.video.src){el.video.src='american-girl-bg-v3.mp4';el.video.load()}}
+async function enter(){if(entered)return;entered=true;document.body.classList.add('entered');el.enter.classList.add('hidden');ensureMedia();try{await el.audio.play()}catch{toast('tap play to start music')}try{el.video.currentTime=el.audio.currentTime||0;await el.video.play()}catch{}}
+async function toggle(){if(!entered){await enter();return}if(el.audio.paused){ensureMedia();try{await el.audio.play();try{el.video.currentTime=el.audio.currentTime}catch{};await el.video.play().catch(()=>{})}catch{toast('song could not be played')}}else{el.audio.pause();el.video.pause()}}
+function playState(){const p=!el.audio.paused;el.play.classList.toggle('playing',p);if(p)el.video.play().catch(()=>{})}
+function openPanel(){fillPanel();el.panel.classList.add('open');el.panel.setAttribute('aria-hidden','false');el.backdrop.classList.add('show')}
+function closePanel(){el.panel.classList.remove('open');el.panel.setAttribute('aria-hidden','true');el.backdrop.classList.remove('show')}
+function secretClick(){const now=Date.now();nameClicks.push(now);nameClicks=nameClicks.filter(t=>now-t<1400);if(nameClicks.length>=3){nameClicks=[];secretArmed=true;secretBuffer='';clearTimeout(secretTimer);secretTimer=setTimeout(()=>{secretArmed=false;secretBuffer=''},10000);toast('type AHMED')}}
+function secretKey(e){if(!secretArmed||e.ctrlKey||e.altKey||e.metaKey)return;if(['INPUT','TEXTAREA'].includes(document.activeElement?.tagName))return;if(e.key.length!==1||!/[a-z]/i.test(e.key))return;secretBuffer=(secretBuffer+e.key.toLowerCase()).slice(-5);if(secretBuffer==='ahmed'){secretArmed=false;secretBuffer='';openPanel()}}
+function resizeCanvas(){const dpr=Math.min(window.devicePixelRatio||1,2),ctx=el.particles.getContext('2d');el.particles.width=Math.round(innerWidth*dpr);el.particles.height=Math.round(innerHeight*dpr);el.particles.style.width=innerWidth+'px';el.particles.style.height=innerHeight+'px';ctx.setTransform(dpr,0,0,dpr,0,0);initParticles()}
+function initParticles(){particleList=config.effects.particles?Array.from({length:28},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*.9+.2,vy:-(Math.random()*.08+.025),vx:(Math.random()-.5)*.05,a:Math.random()*.22+.04})):[]}
+function animate(){const ctx=el.particles.getContext('2d');ctx.clearRect(0,0,innerWidth,innerHeight);particleList.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.y<-4){p.y=innerHeight+4;p.x=Math.random()*innerWidth}ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(220,241,252,${p.a})`;ctx.fill()});raf=requestAnimationFrame(animate)}
+function bind(){el.enter.addEventListener('click',enter);el.enter.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();enter()}});el.play.addEventListener('click',toggle);el.audio.addEventListener('play',playState);el.audio.addEventListener('pause',playState);el.audio.addEventListener('loadedmetadata',()=>el.duration.textContent=fmt(el.audio.duration));el.audio.addEventListener('timeupdate',()=>{el.current.textContent=fmt(el.audio.currentTime);el.progress.value=el.audio.duration?(el.audio.currentTime/el.audio.duration)*100:0;if(!el.video.paused&&Number.isFinite(el.video.currentTime)&&Math.abs(el.video.currentTime-el.audio.currentTime)>.5){try{el.video.currentTime=el.audio.currentTime}catch{}}});el.audio.addEventListener('error',()=>toast('music failed to load'));el.video.addEventListener('canplay',()=>{el.video.classList.add('visible');if(!el.audio.paused){try{el.video.currentTime=el.audio.currentTime}catch{};el.video.play().catch(()=>{})}});el.video.addEventListener('error',()=>toast('video failed to load'));el.progress.addEventListener('input',()=>{if(!el.audio.duration)return;el.audio.currentTime=(Number(el.progress.value)/100)*el.audio.duration;try{el.video.currentTime=el.audio.currentTime}catch{}});el.name.addEventListener('click',secretClick);document.addEventListener('keydown',secretKey);el.close.addEventListener('click',closePanel);el.backdrop.addEventListener('click',closePanel);el.tabs.forEach(t=>t.addEventListener('click',()=>{el.tabs.forEach(x=>x.classList.toggle('active',x===t));el.sections.forEach(s=>s.classList.toggle('active',s.dataset.section===t.dataset.tab))}));[el.adminName,el.adminHandle,el.adminBio,el.adminAccent,el.adminNameColor,el.adminCardAlpha,el.adminCardBlur,el.adminShade].forEach(c=>c.addEventListener('input',live));[el.adminShimmer,el.adminParticles,el.adminGlow,el.adminTilt,el.adminParallax].forEach(c=>c.addEventListener('change',live));el.save.addEventListener('click',()=>{readPanel();localStorage.setItem(STORAGE_KEY,JSON.stringify(config));toast('saved')});el.reset.addEventListener('click',()=>{localStorage.removeItem(STORAGE_KEY);config=clone(DEFAULTS);apply();fillPanel();toast('reset')});el.card.addEventListener('mousemove',e=>{if(!config.effects.tilt||innerWidth<720)return;const r=el.card.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;el.card.style.transform=`perspective(1100px) rotateX(${(-y*2.6).toFixed(2)}deg) rotateY(${(x*3.6).toFixed(2)}deg)`});el.card.addEventListener('mouseleave',()=>el.card.style.transform='');window.addEventListener('mousemove',e=>{el.glow.style.left=e.clientX+'px';el.glow.style.top=e.clientY+'px';el.cursor.style.left=e.clientX+'px';el.cursor.style.top=e.clientY+'px';if(config.effects.parallax&&entered){const x=(e.clientX/innerWidth-.5)*8,y=(e.clientY/innerHeight-.5)*8;el.video.style.transform=`translate3d(${x}px,${y}px,0) scale(1.045)`}}, {passive:true});window.addEventListener('resize',resizeCanvas,{passive:true})}
+apply();fillPanel();bind();resizeCanvas();animate();
+})();
+</script>
+</body>
+</html>
