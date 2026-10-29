@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#14202a">
+  <meta name="description" content="personal profile">
+  <title>madison</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="scene" aria-hidden="true">
+    <div class="fallback-bg"></div>
+    <video id="backgroundVideo" class="background-video" muted loop playsinline preload="none"></video>
+    <div class="video-shade"></div>
+    <div id="cursorGlow" class="cursor-glow"></div>
+    <canvas id="particles" class="particles"></canvas>
+  </div>
+
+  <main class="page-shell">
+    <section id="profileCard" class="profile-card" aria-label="Profile card">
+      <div class="avatar-shell">
+        <div class="avatar-halo"></div>
+        <img id="avatar" src="avatar.jpg" alt="Profile picture">
+        <span class="orbit orbit-a"></span>
+        <span class="orbit orbit-b"></span>
+        <span class="orbit-star star-a">✦</span>
+        <span class="orbit-star star-b">✧</span>
+      </div>
+
+      <div class="identity">
+        <h1 id="displayName" class="display-name" data-text="madison"><span>madison</span></h1>
+        <p id="handle" class="handle">@madisonbeer</p>
+        <p id="bio" class="bio">𓂃˖ ࣪⊹ they say that honest love is a cage that makes you feel free.</p>
+      </div>
+
+      <div id="connections" class="connections" aria-label="Connections"></div>
+
+      <section class="music-player" aria-label="Music player">
+        <div class="track-head">
+          <div class="track-copy">
+            <span class="now-playing">now playing</span>
+            <strong id="songTitle">american girl</strong>
+            <span id="songArtist">tiffany day</span>
+          </div>
+          <button id="playButton" class="play-button" type="button" aria-label="Play or pause">
+            <svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+            <svg class="pause-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>
+          </button>
+        </div>
+        <div class="track-progress-row">
+          <span id="currentTime">0:00</span>
+          <input id="progress" type="range" min="0" max="100" step="0.1" value="0" aria-label="Song progress">
+          <span id="duration">0:00</span>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div id="enterScreen" class="enter-screen" role="button" tabindex="0" aria-label="Click to enter">
+    <div class="enter-blur"></div>
+    <div class="enter-copy">
+      <span class="enter-sparkle">✦</span>
+      <span class="enter-text">click to enter</span>
+      <span class="enter-subtext">american girl</span>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="dotCursor" class="dot-cursor" aria-hidden="true"></div>
+
+  <button id="panelBackdrop" class="panel-backdrop" aria-hidden="true" tabindex="-1"></button>
+  <aside id="adminPanel" class="admin-panel" aria-hidden="true">
+    <div class="panel-header">
+      <div>
+        <span class="panel-eyebrow">secret panel</span>
+        <h2>customize</h2>
+      </div>
+      <button id="closePanel" class="close-panel" type="button" aria-label="Close panel">×</button>
+    </div>
+
+    <div class="panel-tabs">
+      <button class="panel-tab active" data-tab="profile" type="button">profile</button>
+      <button class="panel-tab" data-tab="music" type="button">music</button>
+      <button class="panel-tab" data-tab="style" type="button">style</button>
+      <button class="panel-tab" data-tab="effects" type="button">effects</button>
+      <button class="panel-tab" data-tab="save" type="button">save</button>
+    </div>
+
+    <div class="panel-body">
+      <section class="panel-section active" data-section="profile">
+        <label>name<input id="adminName" type="text" maxlength="40"></label>
+        <label>handle<input id="adminHandle" type="text" maxlength="60"></label>
+        <label>bio<textarea id="adminBio" rows="3" maxlength="220"></textarea></label>
+        <label>avatar filename<input id="adminAvatar" type="text" placeholder="avatar.jpg"></label>
+      </section>
+
+      <section class="panel-section" data-section="music">
+        <label>song title<input id="adminSongTitle" type="text" maxlength="80"></label>
+        <label>artist<input id="adminSongArtist" type="text" maxlength="80"></label>
+        <label>song filename<input id="adminAudio" type="text" placeholder="song.mp3"></label>
+        <label>background video filename<input id="adminVideo" type="text" placeholder="background.mp4"></label>
+        <label class="toggle-row"><span>autoplay after enter</span><input id="adminAutoplay" type="checkbox"></label>
+      </section>
+
+      <section class="panel-section" data-section="style">
+        <label>accent color<input id="adminAccent" type="color"></label>
+        <label>name color<input id="adminNameColor" type="color"></label>
+        <label>card darkness <span id="cardDarknessValue"></span><input id="adminCardDarkness" type="range" min="0.18" max="0.75" step="0.01"></label>
+        <label>card blur <span id="cardBlurValue"></span><input id="adminCardBlur" type="range" min="0" max="36" step="1"></label>
+        <label>background darkness <span id="videoDarknessValue"></span><input id="adminVideoDarkness" type="range" min="0" max="0.75" step="0.01"></label>
+      </section>
+
+      <section class="panel-section" data-section="effects">
+        <label class="toggle-row"><span>name shimmer</span><input id="adminNameShimmer" type="checkbox"></label>
+        <label class="toggle-row"><span>particles</span><input id="adminParticles" type="checkbox"></label>
+        <label class="toggle-row"><span>cursor glow</span><input id="adminCursorGlow" type="checkbox"></label>
+        <label class="toggle-row"><span>card tilt</span><input id="adminTilt" type="checkbox"></label>
+        <label class="toggle-row"><span>video parallax</span><input id="adminParallax" type="checkbox"></label>
+      </section>
+
+      <section class="panel-section" data-section="save">
+        <div class="save-card">
+          <strong>save on this browser</strong>
+          <p>Keeps these settings on this device.</p>
+          <button id="saveLocal" class="panel-button" type="button">save settings</button>
+        </div>
+        <div class="save-card">
+          <strong>reset</strong>
+          <p>Return to the default American Girl setup.</p>
+          <button id="resetLocal" class="panel-button secondary" type="button">reset settings</button>
+        </div>
+      </section>
+    </div>
+  </aside>
+
+  <audio id="audioPlayer" preload="none" loop></audio>
+  <script src="script.js"></script>
+</body>
+</html>
